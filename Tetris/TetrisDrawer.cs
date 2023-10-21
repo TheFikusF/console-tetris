@@ -16,6 +16,7 @@ namespace TetrisLib
         private readonly Position _nextOffset = new Position(24, 4);
         private readonly Position _holdOffset = new Position(24, 11);
         private readonly Position _statsOffset = new Position(24, 18);
+        private readonly Position _comboOffset = new Position(25, 22);
 
         public TetrisDrawer(Tetris tetris)
         {
@@ -24,6 +25,10 @@ namespace TetrisLib
 
             _tetris = tetris;
             _tetris.OnDraw += Draw;
+
+            DrawFrame(_size, _fieldOffset, "╡ TETRIS ╞");
+            DrawFrame(_previewSize, _nextOffset, "╡ NEXT ╞");
+            DrawFrame(_previewSize, _holdOffset, "╡ HOLD ╞");
         }
 
         private int GetBigBoardPixel(int x, int y)
@@ -60,9 +65,12 @@ namespace TetrisLib
             _pendingDraw = false;
             _drawing = true;
 
-            DrawBlock(GetBigBoardPixel, _size, _fieldOffset, "╡ TETRIS" + ((_tetris.Combo > 1) ? $" COMBO X{_tetris.Combo - 1} ╞" : " ╞"));
-            DrawBlock(GetNextBoardPixel, _previewSize, _nextOffset, "╡ NEXT ╞");
-            DrawBlock(GetHoldBoardPixel, _previewSize, _holdOffset, "╡ HOLD ╞");
+            DrawBlock(GetBigBoardPixel, _size, _fieldOffset);
+            DrawBlock(GetNextBoardPixel, _previewSize, _nextOffset);
+            DrawBlock(GetHoldBoardPixel, _previewSize, _holdOffset);
+
+            Console.ForegroundColor = ConsoleColor.White;
+
             Console.SetCursorPosition(_scoreOffset.X, _scoreOffset.Y);
             Console.Write("┌┤ SCORE ├───┐");
             Console.SetCursorPosition(_scoreOffset.X, _scoreOffset.Y+1);
@@ -75,6 +83,24 @@ namespace TetrisLib
             Console.SetCursorPosition(_statsOffset.X, _statsOffset.Y + 2);
             Console.Write($"└Level {_tetris.Level.ToString().PadLeft(6)}┘");
 
+            if(_tetris.Combo > 1)
+            {
+                Console.SetCursorPosition(_comboOffset.X, _comboOffset.Y);
+                Console.Write($"COMBO X{_tetris.Combo - 1}");
+            }
+
+            if(_tetris.GameOver)
+            {
+                Console.SetCursorPosition(_fieldOffset.X + Tetris.WIDTH / 2 + 1, _fieldOffset.Y + Tetris.HEIGHT/2 - 2);
+                Console.Write($"┌──────┐");
+                Console.SetCursorPosition(_fieldOffset.X + Tetris.WIDTH / 2 + 1, _fieldOffset.Y + Tetris.HEIGHT/2 - 1);
+                Console.Write($"| GAME |");
+                Console.SetCursorPosition(_fieldOffset.X + Tetris.WIDTH / 2 + 1, _fieldOffset.Y + Tetris.HEIGHT/2);
+                Console.Write($"| OVER |");
+                Console.SetCursorPosition(_fieldOffset.X + Tetris.WIDTH / 2 + 1, _fieldOffset.Y + Tetris.HEIGHT/2 + 1);
+                Console.Write($"└──────┘");
+            }
+
             _drawing = false;
 
             if(_pendingDraw)
@@ -83,26 +109,32 @@ namespace TetrisLib
             }
         }
 
-        private void DrawBlock(Func<int, int, int> getPixel, Position size, Position position, string title = "")
+        private void DrawBlock(Func<int, int, int> getPixel, Position size, Position position)
         {
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.SetCursorPosition(position.X, position.Y);
-            Console.Write($"╔{title}{new string('═', size.X * 2 - title.Length)}╗");
             for (int y = 0; y < size.Y; y++)
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.SetCursorPosition(position.X, y + position.Y + 1);
-                Console.Write("║");
+                Console.SetCursorPosition(position.X + 1, y + position.Y + 1);
                 for (int x = 0; x < size.X; x++)
                 {
                     int pixel = getPixel(x, y);
                     Console.ForegroundColor = Tetramino.Colors[pixel];
                     Console.Write("██");
                 }
-                Console.ForegroundColor = ConsoleColor.White;
+            }
+        }
+
+        private void DrawFrame(Position size, Position position, string title = "")
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.SetCursorPosition(position.X, position.Y);
+            Console.Write($"╔{title}{new string('═', size.X * 2 - title.Length)}╗");
+            for (int y = 0; y < size.Y; y++)
+            {
+                Console.SetCursorPosition(position.X, y + position.Y + 1);
+                Console.Write("║");
+                Console.SetCursorPosition(position.X + size.X * 2 + 1, y + position.Y + 1);
                 Console.Write("║");
             }
-            Console.ForegroundColor = ConsoleColor.White;
             Console.SetCursorPosition(position.X, size.Y + position.Y + 1);
             Console.Write($"╚{new string('═', size.X * 2)}╝");
         }

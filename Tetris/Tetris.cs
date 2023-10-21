@@ -29,6 +29,7 @@ namespace TetrisLib
         public uint Level => _stats.Level;
         public uint Combo => _stats.Combo;
         public uint Lines => _stats.Lines;
+        public bool GameOver => !_gameIsPlaying;
 
         public Tetris()
         {
@@ -57,7 +58,6 @@ namespace TetrisLib
             if (_gameIsPlaying)
             {
                 MovePiecePosition(new Position(0, 1));
-                DrawBoard();
             
                 await Update();
             }
@@ -65,29 +65,21 @@ namespace TetrisLib
 
         private void DrawBoard()
         {
-/*            _builder.Clear();
-
-            bool WillPaint(int x, int y)
-            {
-                var local = ToLocal(new Position(x, y));
-                bool inShape = local.X < _currentPiece.Size && local.Y < _currentPiece.Size && local.X >= 0 && local.Y >= 0;
-                return _field[x, y] == 1 || (inShape && _currentPiece.Shape[local.X, local.Y] == 1);
-            }
-
-            for (int y = 0; y < HEIGHT; y++)
-            {
-                for (int x = 0; x < WIDTH; x++)
-                {
-                    _builder.Append(WillPaint(x, y) ? "██" : "  ");
-                }
-                _builder.AppendLine();
-            }
-*/
             OnDraw?.Invoke();
         }
 
         public void HandleInput(ConsoleKey key)
         {
+            if (ConsoleKey.R == key)
+            {
+                _gameIsPlaying = false;
+            }
+
+            if (!_gameIsPlaying)
+            {
+                return;
+            }
+
             switch (key)
             {
                 case ConsoleKey.D or ConsoleKey.RightArrow:
@@ -109,16 +101,12 @@ namespace TetrisLib
                     int i = 0;
                     while (i < 22 && _currentPiece.Position.Y != 0)
                     {
-                        MovePiecePosition(new Position(0, 1));
+                        MovePiecePosition(new Position(0, 1), false);
                         i++;
                     }
-                    break;
-                case ConsoleKey.R:
-                    _gameIsPlaying = false;
+                    DrawBoard();
                     break;
             }
-
-            DrawBoard();
         }
 
         private void Stash()
@@ -171,6 +159,7 @@ namespace TetrisLib
             {
                 _currentPiece.Rotate();
             }
+            DrawBoard();
         }
 
         private void NewPiece()
@@ -233,6 +222,7 @@ namespace TetrisLib
             if(_currentPiece.Position.Y < 4)
             {
                 _gameIsPlaying = false;
+                DrawBoard();
             }
         }
 
@@ -247,7 +237,7 @@ namespace TetrisLib
             }
         }
 
-        private void MovePiecePosition(Position move)
+        private void MovePiecePosition(Position move, bool draw = true)
         {
             for (int y = 0; y < _currentPiece.Size; y++)
             {
@@ -284,6 +274,11 @@ namespace TetrisLib
             }
 
             _currentPiece.Position += move;
+            
+            if(draw)
+            {
+                DrawBoard();
+            }
         }
 
         public Position ToLocal(Position position) => ToLocal(position.X, position.Y);
