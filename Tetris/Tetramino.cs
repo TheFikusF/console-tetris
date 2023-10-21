@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-
-namespace TetrisLib
+﻿namespace TetrisLib
 {
     public enum Shape
     {
@@ -29,35 +27,35 @@ namespace TetrisLib
                 { 1, 1},
             },
             new int[4, 4] {
-                { 0, 1, 0, 0 },
-                { 0, 1, 0, 0 },
-                { 0, 1, 0, 0 },
-                { 0, 1, 0, 0 },
+                { 0, 2, 0, 0 },
+                { 0, 2, 0, 0 },
+                { 0, 2, 0, 0 },
+                { 0, 2, 0, 0 },
             },
             new int[3, 3] {
-                { 0, 0, 1 },
-                { 1, 1, 1 },
+                { 0, 0, 3 },
+                { 3, 3, 3 },
                 { 0, 0, 0 },
             },
             new int[3, 3] {
-                { 1, 0, 0 },
-                { 1, 1, 1 },
+                { 4, 0, 0 },
+                { 4, 4, 4 },
                 { 0, 0, 0 },
             },
             new int[3, 3] {
-                { 0, 1, 0 },
-                { 1, 1, 0 },
-                { 0, 1, 0 },
+                { 0, 5, 0 },
+                { 5, 5, 0 },
+                { 0, 5, 0 },
             },
             new int[3, 3] {
-                { 0, 1, 0 },
-                { 1, 1, 0 },
-                { 1, 0, 0 },
+                { 0, 6, 0 },
+                { 6, 6, 0 },
+                { 6, 0, 0 },
             },
             new int[3, 3] {
-                { 1, 0, 0 },
-                { 1, 1, 0 },
-                { 0, 1, 0 },
+                { 7, 0, 0 },
+                { 7, 7, 0 },
+                { 0, 7, 0 },
             },
         };
 
@@ -65,6 +63,18 @@ namespace TetrisLib
         public int[,] Shape => _matrix;
         public int[,] RotatedShape => _matrix;
         public int Size => _size;
+
+        public static readonly ConsoleColor[] Colors = new ConsoleColor[8]
+        {
+            ConsoleColor.Black,
+            ConsoleColor.Yellow,
+            ConsoleColor.Cyan,
+            ConsoleColor.Magenta,
+            ConsoleColor.Blue,
+            ConsoleColor.DarkMagenta,
+            ConsoleColor.Red,
+            ConsoleColor.Green,
+        };
 
         public Tetramino()
         {

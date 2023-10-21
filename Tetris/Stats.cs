@@ -1,6 +1,6 @@
 ﻿namespace TetrisLib
 {
-    public class Stats
+    public sealed class Stats
     {
         private uint _combo = 0;
         private uint _score = 0;

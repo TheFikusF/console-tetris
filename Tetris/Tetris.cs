@@ -1,9 +1,8 @@
 ﻿using System.Text;
-using Terminal.Gui;
 
 namespace TetrisLib
 {
-    public class Tetris
+    public sealed class Tetris
     {
         public const int HEIGHT = 24;
         public const int WIDTH = 10;
@@ -19,21 +18,21 @@ namespace TetrisLib
 
         private Tetramino _currentPiece;
         private Tetramino _nextPiece;
-        private Tetramino _stashedPiece;
-        
-        private Action<string> _drawAction;
-        private Action<string> _drawNext;
-        private Action<string> _drawStash;
-        private Action<Stats> _drawScore;
+        private Tetramino _holdPiece;
 
-        public Tetris(Action<string> drawBoard, Action<string> drawNext, Action<string> drawStash, Action<Stats> drawScore)
+        public event Action OnDraw;
+        public int[,] Field => _field;
+        public int[,] CurrentPiece => _currentPiece.Shape;
+        public int[,] NextPiece => _nextPiece?.Shape ?? new int[2, 2];
+        public int[,] HoldPiece => _holdPiece?.Shape ?? new int[2, 2];
+        public uint Score => _stats.Score;
+        public uint Level => _stats.Level;
+        public uint Combo => _stats.Combo;
+        public uint Lines => _stats.Lines;
+
+        public Tetris()
         {
             _builder = new StringBuilder();
-
-            _drawAction = drawBoard;
-            _drawNext = drawNext;
-            _drawStash = drawStash;
-            _drawScore = drawScore;
         }
 
         public void StartGame()
@@ -42,7 +41,7 @@ namespace TetrisLib
 
             _stats = new Stats();
             _currentPiece = null;
-            _stashedPiece = null;
+            _holdPiece = null;
             _nextPiece = null;
 
             _field = new int[WIDTH, HEIGHT];
@@ -66,7 +65,7 @@ namespace TetrisLib
 
         private void DrawBoard()
         {
-            _builder.Clear();
+/*            _builder.Clear();
 
             bool WillPaint(int x, int y)
             {
@@ -83,33 +82,30 @@ namespace TetrisLib
                 }
                 _builder.AppendLine();
             }
-
-            _drawAction?.Invoke(_builder.ToString());
-            _drawNext?.Invoke(GetPreview(_nextPiece));
-            _drawStash?.Invoke(GetPreview(_stashedPiece));
-            _drawScore?.Invoke(_stats);
+*/
+            OnDraw?.Invoke();
         }
 
-        public void HandleInput(Key key)
+        public void HandleInput(ConsoleKey key)
         {
             switch (key)
             {
-                case Key.d or Key.D or Key.CursorRight:
+                case ConsoleKey.D or ConsoleKey.RightArrow:
                     MovePiecePosition(new Position(1, 0));
                     break;
-                case Key.a or Key.A or Key.CursorLeft:
+                case ConsoleKey.A or ConsoleKey.LeftArrow:
                     MovePiecePosition(new Position(-1, 0));
                     break;
-                case Key.w or Key.W or Key.CursorUp:
+                case ConsoleKey.W or ConsoleKey.UpArrow:
                     Rotate();
                     break;
-                case Key.s or Key.S or Key.CursorDown:
+                case ConsoleKey.S or ConsoleKey.DownArrow:
                     MovePiecePosition(new Position(0, 1));
                     break;
-                case Key.ShiftMask:
+                case ConsoleKey.C:
                     Stash();
                     break;
-                case Key.Space:
+                case ConsoleKey.Spacebar:
                     int i = 0;
                     while (i < 22 && _currentPiece.Position.Y != 0)
                     {
@@ -117,7 +113,7 @@ namespace TetrisLib
                         i++;
                     }
                     break;
-                case Key.R or Key.r:
+                case ConsoleKey.R:
                     _gameIsPlaying = false;
                     break;
             }
@@ -135,17 +131,17 @@ namespace TetrisLib
             var piece = _currentPiece;
             _currentPiece = null;
 
-            if (_stashedPiece == null)
+            if (_holdPiece == null)
             {
                 NewPiece();
             }
             else
             {
-                _currentPiece = _stashedPiece;
+                _currentPiece = _holdPiece;
                 _currentPiece.Position = _startingPosition;
             }
 
-            _stashedPiece = piece;
+            _holdPiece = piece;
 
             _stashed = true;
 
@@ -165,7 +161,7 @@ namespace TetrisLib
                     return;
                 }
 
-                if (_currentPiece.RotatedShape[x, y] == 1 && _field[global.X, global.Y] == 1)
+                if (_currentPiece.RotatedShape[x, y] > 0 && _field[global.X, global.Y] > 0)
                 {
                     failed = true;
                 }
@@ -228,9 +224,9 @@ namespace TetrisLib
             _currentPiece.Iterate((x, y) =>
             {
                 var global = ToGlobal(x, y);
-                if (global.X >= 0 && global.X < WIDTH && global.Y < HEIGHT && _currentPiece.Shape[x, y] == 1)
+                if (global.X >= 0 && global.X < WIDTH && global.Y < HEIGHT && _currentPiece.Shape[x, y] > 0)
                 {
-                    _field[global.X, global.Y] = 1;
+                    _field[global.X, global.Y] = _currentPiece.Shape[x, y];
                 }
             });
 
@@ -290,38 +286,10 @@ namespace TetrisLib
             _currentPiece.Position += move;
         }
 
-        private Position ToLocal(Position position) => ToLocal(position.X, position.Y);
-        private Position ToLocal(int x, int y) => new Position(x + 1 - _currentPiece.Position.X, y - _currentPiece.Position.Y);
+        public Position ToLocal(Position position) => ToLocal(position.X, position.Y);
+        public Position ToLocal(int x, int y) => new Position(x + 1 - _currentPiece.Position.X, y - _currentPiece.Position.Y);
 
-        private Position ToGlobal(Position position) => ToGlobal(position.X, position.Y);
-        private Position ToGlobal(int x, int y) => new Position(x - 1 + _currentPiece.Position.X, y + _currentPiece.Position.Y);
-
-        private string GetPreview(Tetramino tetramino)
-        {
-            if(tetramino == null)
-            {
-                return new string(' ', 12);
-            }
-
-            _builder.Clear();
-
-            bool WillPaint(int x, int y)
-            {
-                var local = new Position(x + 1 - 2, y - 1);
-                bool inShape = local.X < tetramino.Size && local.Y < tetramino.Size && local.X >= 0 && local.Y >= 0;
-                return (inShape && tetramino.Shape[local.X, local.Y] == 1);
-            }
-
-            for (int y = 0; y < 5; y++)
-            {
-                for (int x = 0; x < 6; x++)
-                {
-                    _builder.Append(WillPaint(x, y) ? "██" : "  ");
-                }
-                _builder.AppendLine();
-            }
-
-            return _builder.ToString();
-        }
+        public Position ToGlobal(Position position) => ToGlobal(position.X, position.Y);
+        public Position ToGlobal(int x, int y) => new Position(x - 1 + _currentPiece.Position.X, y + _currentPiece.Position.Y);
     }
 }

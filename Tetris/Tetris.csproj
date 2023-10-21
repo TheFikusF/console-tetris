@@ -12,8 +12,4 @@
 	<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Terminal.Gui" Version="2.0.0-pre.186" />
-  </ItemGroup>
-
 </Project>
