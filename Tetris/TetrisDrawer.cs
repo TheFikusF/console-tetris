@@ -83,11 +83,8 @@ namespace TetrisLib
             Console.SetCursorPosition(_statsOffset.X, _statsOffset.Y + 2);
             Console.Write($"└Level {_tetris.Level.ToString().PadLeft(6)}┘");
 
-            if(_tetris.Combo > 1)
-            {
-                Console.SetCursorPosition(_comboOffset.X, _comboOffset.Y);
-                Console.Write($"COMBO X{_tetris.Combo - 1}");
-            }
+            Console.SetCursorPosition(_comboOffset.X, _comboOffset.Y);
+            Console.Write(_tetris.Combo > 1 ? $"COMBO X{_tetris.Combo - 1}" : "             ");
 
             if(_tetris.GameOver)
             {

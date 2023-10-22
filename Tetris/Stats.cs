@@ -11,14 +11,23 @@
 
         public uint Combo => _combo;
         public uint Score => _score;
-        public uint Level => _level;
+        public uint Level
+        {
+            get => _level;
+            private set
+            {
+                _level = value;
+                _gravity = _gravityCheatSheet;
+            }
+        }
+
         public uint Lines => _lines;
 
         public int Gravity => _gravity;
 
-        public Stats()
+        public Stats(uint level)
         {
-            _gravity = _gravityCheatSheet;
+            Level = level;
         }
 
         private int _gravityCheatSheet => Level switch
@@ -58,8 +67,7 @@
             _lines += (uint)amount;
             if(_lines >= 10 * _level)
             {
-                _level++;
-                _gravity = _gravityCheatSheet;
+                Level++;
             }
 
             CalculateCombo();

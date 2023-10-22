@@ -61,7 +61,7 @@
 
         public Position Position { get => _position; set => _position = value; }
         public int[,] Shape => _matrix;
-        public int[,] RotatedShape => _matrix;
+        public int[,] RotatedShape => _rotatedMatrix;
         public int Size => _size;
 
         public static readonly ConsoleColor[] Colors = new ConsoleColor[8]
@@ -78,7 +78,7 @@
 
         public Tetramino()
         {
-            _shape = (Shape)Extensions.Random.Next(0, 7);
+            _shape = (Shape)Extensions.Random.Next();
             _matrix = _shapes[(int)_shape];
             _size = _matrix.GetLength(0);
 

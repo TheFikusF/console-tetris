@@ -2,7 +2,7 @@
 {
     public static class Extensions
     {
-        public static readonly Random Random = new Random();
+        public static readonly SevenBag Random = new SevenBag(7);
 
         public static int[,] RotateMatrix(int[,] matrix, int n)
         {
@@ -17,6 +17,19 @@
             }
 
             return ret;
+        }
+
+        public static void Shuffle<T>(T[] list)
+        {
+            Random random = new Random();
+
+            for (int i = list.Length - 1; i > 0; i--)
+            {
+                int j = random.Next(i + 1);
+                T temp = list[i];
+                list[i] = list[j];
+                list[j] = temp;
+            }
         }
     }
 }

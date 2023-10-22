@@ -13,6 +13,8 @@ namespace TetrisLib
 
         private readonly Position _startingPosition = new Position(4, 0);
 
+        private CancellationToken _updateCancel;
+
         private int[,] _field;
         private StringBuilder _builder;
 
@@ -36,11 +38,12 @@ namespace TetrisLib
             _builder = new StringBuilder();
         }
 
-        public void StartGame()
+        public void StartGame(uint level)
         {
             _gameIsPlaying = true;
 
-            _stats = new Stats();
+            _stats = new Stats(level);
+            _updateCancel = new CancellationTokenSource().Token;
             _currentPiece = null;
             _holdPiece = null;
             _nextPiece = null;
@@ -48,18 +51,17 @@ namespace TetrisLib
             _field = new int[WIDTH, HEIGHT];
             NewPiece();
             DrawBoard();
-            Update();
+
+            Task.Run(Update, _updateCancel);
         }
 
         private async Task Update()
         {
-            await Task.Delay(_stats.Gravity);
-            
-            if (_gameIsPlaying)
+            await Task.Delay(_stats.Gravity, _updateCancel);
+            while (_gameIsPlaying)
             {
-                MovePiecePosition(new Position(0, 1));
-            
-                await Update();
+                MovePiecePosition(Position.Down);
+                await Task.Delay(_stats.Gravity, _updateCancel);
             }
         }
 
@@ -83,16 +85,16 @@ namespace TetrisLib
             switch (key)
             {
                 case ConsoleKey.D or ConsoleKey.RightArrow:
-                    MovePiecePosition(new Position(1, 0));
+                    MovePiecePosition(Position.Right);
                     break;
                 case ConsoleKey.A or ConsoleKey.LeftArrow:
-                    MovePiecePosition(new Position(-1, 0));
+                    MovePiecePosition(Position.Left);
                     break;
                 case ConsoleKey.W or ConsoleKey.UpArrow:
                     Rotate();
                     break;
                 case ConsoleKey.S or ConsoleKey.DownArrow:
-                    MovePiecePosition(new Position(0, 1));
+                    MovePiecePosition(Position.Down);
                     break;
                 case ConsoleKey.C:
                     Stash();
@@ -101,7 +103,7 @@ namespace TetrisLib
                     int i = 0;
                     while (i < 22 && _currentPiece.Position.Y != 0)
                     {
-                        MovePiecePosition(new Position(0, 1), false);
+                        MovePiecePosition(Position.Down, false);
                         i++;
                     }
                     DrawBoard();
@@ -139,27 +141,49 @@ namespace TetrisLib
         private void Rotate()
         {
             bool failed = false;
-            _currentPiece.Iterate((x, y) =>
+            int failedXpos = 0;
+
+            void CheckRotation(Position offset)
             {
-                var global = ToGlobal(x, y);
-
-                if (global.X >= WIDTH || global.X < 0 || global.Y >= HEIGHT)
+                for (int y = 0; y < _currentPiece.Size; y++)
                 {
-                    failed = true;
-                    return;
-                }
+                    for (int x = 0; x < _currentPiece.Size; x++)
+                    {
+                        var global = ToGlobal(x, y) + offset;
 
-                if (_currentPiece.RotatedShape[x, y] > 0 && _field[global.X, global.Y] > 0)
+                        if (global.X >= WIDTH || global.X < 0 || global.Y >= HEIGHT)
+                        {
+                            failed = true;
+                            failedXpos = x;
+                            break;
+                        }
+
+                        if (_currentPiece.RotatedShape[x, y] > 0 && _field[global.X, global.Y] > 0)
+                        {
+                            failed = true;
+                            failedXpos = x;
+                        }
+                    }
+                }
+            }
+
+            CheckRotation(Position.Zero);
+            if(failed && failedXpos == 0 || failedXpos == 2)
+            {
+                failed = false;
+                Position move = failedXpos == 0 ? Position.Right : Position.Left;
+                CheckRotation(move);
+                if(!failed)
                 {
-                    failed = true;
+                    MovePiecePosition(move, false);
                 }
-            });
+            }
 
-            if(!failed)
+            if (!failed)
             {
                 _currentPiece.Rotate();
+                DrawBoard();
             }
-            DrawBoard();
         }
 
         private void NewPiece()
@@ -182,6 +206,8 @@ namespace TetrisLib
             {
                 Position = _startingPosition
             };
+
+            GC.Collect();
         }
 
         private void TryClearLines()
