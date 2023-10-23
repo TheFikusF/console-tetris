@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using TetrisLib.Console;
 
 namespace TetrisLib
 {
@@ -20,8 +21,8 @@ namespace TetrisLib
 
         public TetrisDrawer(Tetris tetris)
         {
-            Console.CursorVisible = false;
-            Console.Title = "T E T R I S";
+            System.Console.CursorVisible = false;
+            System.Console.Title = "T E T R I S";
 
             _tetris = tetris;
             _tetris.OnDraw += Draw;
@@ -69,33 +70,34 @@ namespace TetrisLib
             DrawBlock(GetNextBoardPixel, _previewSize, _nextOffset);
             DrawBlock(GetHoldBoardPixel, _previewSize, _holdOffset);
 
-            Console.ForegroundColor = ConsoleColor.White;
+            //Console.ForegroundColor = ConsoleColor.White;
+            ConsoleExtensions.SetColors(ConsoleColor.White, ConsoleColor.Black);
 
-            Console.SetCursorPosition(_scoreOffset.X, _scoreOffset.Y);
-            Console.Write("┌┤ SCORE ├───┐");
-            Console.SetCursorPosition(_scoreOffset.X, _scoreOffset.Y+1);
-            Console.Write($"└┤{_tetris.Score.ToString().PadLeft(10)}├┘");
+            ConsoleExtensions.SetCursorPosition(_scoreOffset.X, _scoreOffset.Y);
+            ConsoleExtensions.Write("┌┤ SCORE ├───┐");
+            ConsoleExtensions.SetCursorPosition(_scoreOffset.X, _scoreOffset.Y+1);
+            ConsoleExtensions.Write($"└┤{_tetris.Score.ToString().PadLeft(10)}├┘");
+            ConsoleExtensions.SetCursorPosition(_statsOffset.X, _statsOffset.Y);
 
-            Console.SetCursorPosition(_statsOffset.X, _statsOffset.Y);
-            Console.Write("┌┤ STATS ├───┐");
-            Console.SetCursorPosition(_statsOffset.X, _statsOffset.Y + 1);
-            Console.Write($"├Lines {_tetris.Lines.ToString().PadLeft(6)}┤");
-            Console.SetCursorPosition(_statsOffset.X, _statsOffset.Y + 2);
-            Console.Write($"└Level {_tetris.Level.ToString().PadLeft(6)}┘");
+            ConsoleExtensions.Write("┌┤ STATS ├───┐");
+            ConsoleExtensions.SetCursorPosition(_statsOffset.X, _statsOffset.Y + 1);
+            ConsoleExtensions.Write($"├Lines {_tetris.Lines.ToString().PadLeft(6)}┤");
+            ConsoleExtensions.SetCursorPosition(_statsOffset.X, _statsOffset.Y + 2);
+            ConsoleExtensions.Write($"└Level {_tetris.Level.ToString().PadLeft(6)}┘");
 
-            Console.SetCursorPosition(_comboOffset.X, _comboOffset.Y);
-            Console.Write(_tetris.Combo > 1 ? $"COMBO X{_tetris.Combo - 1}" : "             ");
+            ConsoleExtensions.SetCursorPosition(_comboOffset.X, _comboOffset.Y);
+            ConsoleExtensions.Write(_tetris.Combo > 1 ? $"COMBO X{_tetris.Combo - 1}" : "             ");
 
             if(_tetris.GameOver)
             {
-                Console.SetCursorPosition(_fieldOffset.X + Tetris.WIDTH / 2 + 1, _fieldOffset.Y + Tetris.HEIGHT/2 - 2);
-                Console.Write($"┌──────┐");
-                Console.SetCursorPosition(_fieldOffset.X + Tetris.WIDTH / 2 + 1, _fieldOffset.Y + Tetris.HEIGHT/2 - 1);
-                Console.Write($"| GAME |");
-                Console.SetCursorPosition(_fieldOffset.X + Tetris.WIDTH / 2 + 1, _fieldOffset.Y + Tetris.HEIGHT/2);
-                Console.Write($"| OVER |");
-                Console.SetCursorPosition(_fieldOffset.X + Tetris.WIDTH / 2 + 1, _fieldOffset.Y + Tetris.HEIGHT/2 + 1);
-                Console.Write($"└──────┘");
+                ConsoleExtensions.SetCursorPosition(_fieldOffset.X + Tetris.WIDTH / 2 + 1, _fieldOffset.Y + Tetris.HEIGHT/2 - 2);
+                ConsoleExtensions.Write($"┌──────┐");
+                ConsoleExtensions.SetCursorPosition(_fieldOffset.X + Tetris.WIDTH / 2 + 1, _fieldOffset.Y + Tetris.HEIGHT/2 - 1);
+                ConsoleExtensions.Write($"| GAME |");
+                ConsoleExtensions.SetCursorPosition(_fieldOffset.X + Tetris.WIDTH / 2 + 1, _fieldOffset.Y + Tetris.HEIGHT/2);
+                ConsoleExtensions.Write($"| OVER |");
+                ConsoleExtensions.SetCursorPosition(_fieldOffset.X + Tetris.WIDTH / 2 + 1, _fieldOffset.Y + Tetris.HEIGHT/2 + 1);
+                ConsoleExtensions.Write($"└──────┘");
             }
 
             _drawing = false;
@@ -110,30 +112,32 @@ namespace TetrisLib
         {
             for (int y = 0; y < size.Y; y++)
             {
-                Console.SetCursorPosition(position.X + 1, y + position.Y + 1);
+                ConsoleExtensions.SetCursorPosition(position.X + 1, y + position.Y + 1);
                 for (int x = 0; x < size.X; x++)
                 {
                     int pixel = getPixel(x, y);
-                    Console.ForegroundColor = Tetramino.Colors[pixel];
-                    Console.Write("██");
+                    //Console.ForegroundColor = Tetramino.Colors[pixel];
+                    ConsoleExtensions.SetColors(Tetramino.Colors[pixel], ConsoleColor.Black);
+                    ConsoleExtensions.Write("██");
                 }
             }
         }
 
         private void DrawFrame(Position size, Position position, string title = "")
         {
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.SetCursorPosition(position.X, position.Y);
-            Console.Write($"╔{title}{new string('═', size.X * 2 - title.Length)}╗");
+            //Console.ForegroundColor = ConsoleColor.White;
+            ConsoleExtensions.SetColors(ConsoleColor.White, ConsoleColor.Black);
+            ConsoleExtensions.SetCursorPosition(position.X, position.Y);
+            ConsoleExtensions.Write($"╔{title}{new string('═', size.X * 2 - title.Length)}╗");
             for (int y = 0; y < size.Y; y++)
             {
-                Console.SetCursorPosition(position.X, y + position.Y + 1);
-                Console.Write("║");
-                Console.SetCursorPosition(position.X + size.X * 2 + 1, y + position.Y + 1);
-                Console.Write("║");
+                ConsoleExtensions.SetCursorPosition(position.X, y + position.Y + 1);
+                ConsoleExtensions.Write("║");
+                ConsoleExtensions.SetCursorPosition(position.X + size.X * 2 + 1, y + position.Y + 1);
+                ConsoleExtensions.Write("║");
             }
-            Console.SetCursorPosition(position.X, size.Y + position.Y + 1);
-            Console.Write($"╚{new string('═', size.X * 2)}╝");
+            ConsoleExtensions.SetCursorPosition(position.X, size.Y + position.Y + 1);
+            ConsoleExtensions.Write($"╚{new string('═', size.X * 2)}╝");
         }
     }
 }

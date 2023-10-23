@@ -1,4 +1,5 @@
 ﻿using TetrisLib;
+using TetrisLib.Console;
 
 uint level = (args.Length == 2 && (args[0] == "-l" || args[0] == "--level") && int.TryParse(args[1], out int result)) ? (uint)result : 1;
 
@@ -13,15 +14,11 @@ Tetris Start()
 
 var tetris = Start();
 
-while (true)
+ConsoleExtensions.ReadInput((key) =>
 {
-    if (Console.KeyAvailable)
+    tetris.HandleInput(key);
+    if (key == ConsoleKey.R)
     {
-        var key = Console.ReadKey(true).Key;
-        tetris.HandleInput(key);
-        if(key == ConsoleKey.R)
-        {
-            tetris = Start();
-        }
+        tetris = Start();
     }
-}
+});
