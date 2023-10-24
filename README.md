@@ -1,6 +1,6 @@
 # console-tetris
 Console-based tetris.
-<img src=Docs/tetris-prevoew.gif width=500px>
+<img src=Docs/tetris-preview.gif width=500px>
 
 ## flags
 - `-l (0-99)`/`--level (0-99)` - defines the level where game begins. The game speed doesn't scales after 29 level.
