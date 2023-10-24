@@ -1,6 +1,8 @@
 ﻿using TetrisLib;
 using TetrisLib.Console;
 
+Console.Clear();
+
 uint level = 1;
 bool ghostBlock = false;
 
