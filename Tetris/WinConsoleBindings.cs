@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿#if OS_WINDOWS
+using System.Runtime.InteropServices;
 
 namespace TetrisLib.Console
 {
@@ -148,3 +149,4 @@ namespace TetrisLib.Console
         }
     }
 }
+#endif

@@ -7,6 +7,7 @@ namespace TetrisLib
     {
         private bool _drawing;
         private bool _pendingDraw;
+        private delegate int GetPixel(int x, int y, out bool ghostBlock);
         private readonly Tetris _tetris;
 
         private readonly Position _size = new Position(Tetris.WIDTH, Tetris.HEIGHT);
@@ -32,24 +33,36 @@ namespace TetrisLib
             DrawFrame(_previewSize, _holdOffset, "╡ HOLD ╞");
         }
 
-        private int GetBigBoardPixel(int x, int y)
+        private int GetBigBoardPixel(int x, int y, out bool ghostBlock)
         {
-            var local = _tetris.ToLocal(x, y);
-            bool inShape = local.X < _tetris.CurrentPiece.GetLength(0) && local.Y < _tetris.CurrentPiece.GetLength(0) && local.X >= 0 && local.Y >= 0;
+            var localCurrent = _tetris.CurrentToLocal(x, y);
+            var localGhost = _tetris.GhostToLocal(x, y);
+            bool inShape = localCurrent.X < _tetris.CurrentPiece.GetLength(0) && localCurrent.Y < _tetris.CurrentPiece.GetLength(0) && localCurrent.X >= 0 && localCurrent.Y >= 0 
+                && _tetris.CurrentPiece[localCurrent.X, localCurrent.Y] > 0;
+            
+            ghostBlock = !inShape
+                && localGhost.X < _tetris.CurrentPiece.GetLength(0) && localGhost.Y < _tetris.CurrentPiece.GetLength(0) && localGhost.X >= 0 && localGhost.Y >= 0 
+                && _tetris.GhostPiece[localGhost.X, localGhost.Y] > 0;
 
-            return (inShape && _tetris.CurrentPiece[local.X, local.Y] > 0)
-                ? _tetris.CurrentPiece[local.X, local.Y]
+            if(ghostBlock)
+            {
+                return _tetris.GhostPiece[localGhost.X, localGhost.Y];
+            }
+
+            return inShape
+                ? _tetris.CurrentPiece[localCurrent.X, localCurrent.Y]
                 : _tetris.Field[x, y];
         }
 
-        private int GetNextBoardPixel(int x, int y) => GetSmallBoardPixel(_tetris.NextPiece, x, y);
-        private int GetHoldBoardPixel(int x, int y) => GetSmallBoardPixel(_tetris.HoldPiece, x, y);
+        private int GetNextBoardPixel(int x, int y, out bool ghostBlock) => GetSmallBoardPixel(_tetris.NextPiece, x, y, out ghostBlock);
+        private int GetHoldBoardPixel(int x, int y, out bool ghostBlock) => GetSmallBoardPixel(_tetris.HoldPiece, x, y, out ghostBlock);
 
-        private int GetSmallBoardPixel(int[,] shape, int x, int y)
+        private int GetSmallBoardPixel(int[,] shape, int x, int y, out bool ghostBlock)
         {
             var local = new Position(x + 1 - 2, y - 1);
             bool inShape = local.X < shape.GetLength(0) && local.Y < shape.GetLength(0) && local.X >= 0 && local.Y >= 0;
 
+            ghostBlock = false;
             return (inShape && shape[local.X, local.Y] > 0)
                 ? shape[local.X, local.Y]
                 : 0;
@@ -108,17 +121,17 @@ namespace TetrisLib
             }
         }
 
-        private void DrawBlock(Func<int, int, int> getPixel, Position size, Position position)
+        private void DrawBlock(GetPixel getPixel, Position size, Position position)
         {
             for (int y = 0; y < size.Y; y++)
             {
                 ConsoleExtensions.SetCursorPosition(position.X + 1, y + position.Y + 1);
                 for (int x = 0; x < size.X; x++)
                 {
-                    int pixel = getPixel(x, y);
+                    int pixel = getPixel(x, y, out bool ghostBlock);
                     //Console.ForegroundColor = Tetramino.Colors[pixel];
                     ConsoleExtensions.SetColors(Tetramino.Colors[pixel], ConsoleColor.Black);
-                    ConsoleExtensions.Write("██");
+                    ConsoleExtensions.Write(ghostBlock ? "▒▒" : "██");
                 }
             }
         }

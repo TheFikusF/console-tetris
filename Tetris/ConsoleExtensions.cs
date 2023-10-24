@@ -1,49 +1,55 @@
-﻿namespace TetrisLib.Console
+﻿#define WIN
+
+namespace TetrisLib.Console
 {
     public static class ConsoleExtensions
     {
-        private static readonly bool _isWindows;
-
         static ConsoleExtensions()
         {
-            _isWindows = System.OperatingSystem.IsWindows();
+/*#if OS_LINUX         
+            LinuxConsoleBingings.Init();
+#endif*/
         }
 
         public static void Write(string message)
         {
-            if(_isWindows)
-            {
-                WinConsoleBindings.Write(message);
-            }
-            else
-            {
-                System.Console.Write(message);
-            }
+#if OS_WINDOWS
+            WinConsoleBindings.Write(message);
+/*#elif OS_LINUX
+            LinuxConsoleBingings.Write(message);*/
+#else
+            System.Console.Write(message);
+#endif
         }
 
         public static void SetCursorPosition(int x, int y)
         {
-            if (_isWindows)
-            {
-                WinConsoleBindings.SetCursorPosition(x, y);
-            }
-            else
-            {
-                System.Console.SetCursorPosition(x, y);
-            }
+#if OS_WINDOWS
+            WinConsoleBindings.SetCursorPosition(x, y);
+/*#elif OS_LINUX
+            LinuxConsoleBingings.SetCursorPosition(x, y);*/
+#else
+            System.Console.SetCursorPosition(x, y);
+#endif
         }
 
         public static void SetColors(ConsoleColor foreground, ConsoleColor backgound)
         {
-            if (_isWindows)
-            {
-                WinConsoleBindings.SetColor(foreground, backgound);
-            }
-            else
-            {
-                System.Console.ForegroundColor = foreground;
-                System.Console.BackgroundColor = backgound;
-            }
+#if OS_WINDOWS
+            WinConsoleBindings.SetColor(foreground, backgound);
+/*#elif OS_LINUX
+            LinuxConsoleBingings.SetColor(foreground, backgound);*/
+#else
+            System.Console.ForegroundColor = foreground;
+            System.Console.BackgroundColor = backgound;
+#endif
+        }
+
+        public static void Dispose()
+        {
+/*#if OS_LINUX         
+            LinuxConsoleBingings.Dispose();
+#endif*/
         }
 
         public static void ReadInput(Action<ConsoleKey> action)

@@ -85,6 +85,20 @@
             _rotatedMatrix = Extensions.RotateMatrix(_matrix, Size);
         }
 
+        public Tetramino(Tetramino tetramino)
+        {
+            _position = tetramino.Position;
+            _size = tetramino._size;
+            _matrix = new int[_size, _size];
+            for(int x = 0; x < _size; x++)
+            {
+                for(int y = 0; y < _size; y++)
+                {
+                    _matrix[x, y] = tetramino._matrix[x, y];
+                }
+            }
+        }
+
         public void Iterate(Action<int, int> action)
         {
             for (int y = 0; y < _size; y++)

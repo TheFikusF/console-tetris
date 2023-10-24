@@ -5,8 +5,11 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	<PublishAot>true</PublishAot>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <!--<DefineConstants>OS_LINUX</DefineConstants>
+	<PublishAot>true</PublishAot>
+    <DefineConstants>OS_WINDOWS</DefineConstants>
+    
+  <DefineConstants>OS_MAC</DefineConstants>-->
   </PropertyGroup>
-
 </Project>

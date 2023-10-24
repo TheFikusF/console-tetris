@@ -1,11 +1,25 @@
 ﻿using TetrisLib;
 using TetrisLib.Console;
 
-uint level = (args.Length == 2 && (args[0] == "-l" || args[0] == "--level") && int.TryParse(args[1], out int result)) ? (uint)result : 1;
+uint level = 1;
+bool ghostBlock = false;
+
+int levelArg = Array.IndexOf(args, "-l");
+levelArg = levelArg == -1 ? Array.IndexOf(args, "--level") : levelArg;
+if(levelArg + 1 > 0 && levelArg + 1 < args.Length && int.TryParse(args[levelArg + 1], out int result))
+{
+    level = (uint)result;
+}
+
+if (args.Contains("-g") || args.Contains("--ghost-block"))
+{
+    ghostBlock = true;
+}
 
 Tetris Start()
 {
     var tetris = new Tetris();
+    tetris.DrawGhostBlock = ghostBlock;
     var drawer = new TetrisDrawer(tetris);
 
     tetris.StartGame(level);
@@ -20,5 +34,10 @@ ConsoleExtensions.ReadInput((key) =>
     if (key == ConsoleKey.R)
     {
         tetris = Start();
+    }
+
+    if (key == ConsoleKey.E)
+    {
+        ghostBlock = !ghostBlock;
     }
 });
